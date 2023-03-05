@@ -15,7 +15,7 @@ metadata:
   selfLink: /apis/apps.openshift.io/v1/namespaces/cp-000001/deploymentconfigs/hello-world
   uid: 317c90de-bab2-11ed-92c4-0800272b7deb
 spec:
-  replicas: 1
+  replicas: 3
   revisionHistoryLimit: 10
   selector:
     deploymentconfig: hello-world
