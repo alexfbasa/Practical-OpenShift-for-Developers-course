@@ -1,0 +1,81 @@
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftNewApp
+  creationTimestamp: "2023-03-04T17:30:01Z"
+  generation: 1
+  labels:
+    app: hello-world
+    app.kubernetes.io/component: hello-world
+    app.kubernetes.io/instance: hello-world
+  name: hello-world
+  namespace: cp-000001
+  resourceVersion: "44447"
+  selfLink: /apis/apps.openshift.io/v1/namespaces/cp-000001/deploymentconfigs/hello-world
+  uid: 317c90de-bab2-11ed-92c4-0800272b7deb
+spec:
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    deploymentconfig: hello-world
+  strategy:
+    activeDeadlineSeconds: 21600
+    resources: {}
+    rollingParams:
+      intervalSeconds: 1
+      maxSurge: 25%
+      maxUnavailable: 25%
+      timeoutSeconds: 600
+      updatePeriodSeconds: 1
+    type: Rolling
+  template:
+    metadata:
+      annotations:
+        openshift.io/generated-by: OpenShiftNewApp
+      creationTimestamp: null
+      labels:
+        deploymentconfig: hello-world
+    spec:
+      containers:
+      - image: quay.io/practicalopenshift/hello-world:latest
+        imagePullPolicy: Always
+        name: hello-world
+        ports:
+        - containerPort: 8080
+          protocol: TCP
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+  test: false
+  triggers:
+  - type: ConfigChange
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2023-03-04T17:30:06Z"
+    lastUpdateTime: "2023-03-04T17:30:06Z"
+    message: Deployment config has minimum availability.
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2023-03-04T17:30:07Z"
+    lastUpdateTime: "2023-03-04T17:30:07Z"
+    message: replication controller "hello-world-1" successfully rolled out
+    reason: NewReplicationControllerAvailable
+    status: "True"
+    type: Progressing
+  details:
+    causes:
+    - type: ConfigChange
+    message: config change
+  latestVersion: 1
+  observedGeneration: 1
+  readyReplicas: 1
+  replicas: 1
+  unavailableReplicas: 0
+  updatedReplicas: 1
