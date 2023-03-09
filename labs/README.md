@@ -154,3 +154,68 @@ oc logs -f bc/hello-world
 Check status and pods
 oc status
 oc get pods
+
+Create a pod based on a file (just like the Pods section)
+oc create -f pods/pod.yaml
+
+Create a service for the pod
+oc expose --port 8080 pod/hello-world-pod
+
+heck that the service and pod are connected properly
+oc status
+
+Create another pod
+oc create -f pods/pod2.yaml
+
+Shell into the second pod
+oc rsh hello-world-pod-2
+
+Get the service IP and Port
+oc status
+
+# In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
+wget -qO- <service IP : Port>
+
+# Inside the pod, get all environment variables
+env
+
+# Use the environment variables with wget
+wget -qO- $HELLO_WORLD_POD_PORT_8080_TCP_ADDR:$HELLO_WORLD_POD_PORT_8080_TCP_PORT
+
+# Create a Route based on a Service
+oc expose svc/hello-world
+
+# Get the Route URL
+oc status
+
+# Check the route
+curl <route from oc status>
+
+
+# Creating ConfigMaps
+# Create a configmap using literal command line arguments
+oc create configmap message-map --from-literal MESSAGE="Hello From ConfigMap"
+
+oc get cm/message-map
+# Create a ConfigMap using literal command line arguments
+oc create configmap <configmap-name> --from-literal KEY="VALUE"
+
+# Create from a file
+oc create configmap <configmap-name> --from-file=MESSAGE.txt
+
+# Create from a file with a key override
+oc create configmap <configmap-name> --from-file=MESSAGE=MESSAGE.txt
+
+# Same --from-file but with a directory
+oc create configmap <configmap-name> --from-file pods
+
+# Verify
+oc get -o yaml configmap/<configmap-name>
+
+
+# Consuming ConfigMaps as Environment Variables
+
+# Set environment variables (same for all types of ConfigMap)
+oc set env dc/hello-world --from cm/<configmap-name>
+oc set env dc/hello-world --from cm/message-map
+
