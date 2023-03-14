@@ -173,16 +173,16 @@ oc rsh hello-world-pod-2
 Get the service IP and Port
 oc status
 
-# In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
+In the shell, you can make a request to the service (because you are inside the OpenShift cluster)
 wget -qO- <service IP : Port>
 
-# Inside the pod, get all environment variables
+Inside the pod, get all environment variables
 env
 
-# Use the environment variables with wget
+Use the environment variables with wget
 wget -qO- $HELLO_WORLD_POD_PORT_8080_TCP_ADDR:$HELLO_WORLD_POD_PORT_8080_TCP_PORT
 
-# Create a Route based on a Service
+Create a Route based on a Service
 oc expose svc/hello-world
 
 # Get the Route URL
