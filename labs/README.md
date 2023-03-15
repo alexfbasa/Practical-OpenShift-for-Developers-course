@@ -147,6 +147,7 @@ oc new-app <git repo URL>
 
 For this lesson
 oc new-app https://gitlab.com/practical-openshift/hello-world.git
+oc new-app https://github.com/alexfbasa/nginx-demo.git --name nginx-test --as-deployment-config
 
 Follow build progress
 oc logs -f bc/hello-world
