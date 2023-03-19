@@ -18,6 +18,27 @@ Stop one
 docker kill <Container ID>
 ```
 
+# Build strategies
+
+## Docker build
+We run the build through a Dockerfile
+It will check in the CSM repository and read the Dockerfile instructions. 
+This strategy require to us to provide the list of the instructions in the Dockerfile.
+When the build job runs, Openshift will automatically create a docker image using in this Dockerfile.
+The image will push into the internal docker-registry  
+
+## S2i - Source-to-Image
+Source to Image is a framework that takes your application code and converts it into a re-usable Docker image without you having to provide
+the instructions in a Dockerfile.
+It uses a pre-built Python builder image and injects the application code into it to create the final
+application image. In the previous exercise when we deployed the application using the python catalog item, it automatically created a build configuration
+of type Source to Image build.
+If you need to modify the build strategy you must edit the build configuration from the web console
+interface or from a YAML file.
+E.g: nginx_build-conf.yaml
+
+## Custom build
+Image Streams 
 # PODs
 
 Pod is a collection of containers running

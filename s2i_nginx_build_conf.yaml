@@ -1,0 +1,47 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  annotations:
+    openshift.io/generated-by: OpenShiftWebConsole
+  creationTimestamp: "2023-03-19T13:38:49Z"
+  labels:
+    app: nginx-proxy
+  name: nginx-proxy
+  namespace: cp-000001
+  resourceVersion: "247369"
+  selfLink: /apis/build.openshift.io/v1/namespaces/cp-000001/buildconfigs/nginx-proxy
+  uid: 616f663c-c65b-11ed-9e70-080027d5ca4e
+spec:
+  nodeSelector: null
+  output:
+    to:
+      kind: ImageStreamTag
+      name: nginx-proxy:latest
+  postCommit: {}
+  resources: {}
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: https://github.com/alexfbasa/nginx-demo.git
+    type: Git
+  strategy:
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: nginx:1.12
+        namespace: openshift
+    type: Source
+  triggers:
+  - imageChange:
+      lastTriggeredImageID: 172.30.1.1:5000/openshift/nginx@sha256:af171c38298e64664a9f999194480ce7e392858e773904df22f7585a1731ad0d
+    type: ImageChange
+  - type: ConfigChange
+  - generic:
+      secret: 7218d9b777b6ea3e
+    type: Generic
+  - github:
+      secret: 36fcad3f1ca3e423
+    type: GitHub
+status:
+  lastVersion: 1
