@@ -1,5 +1,7 @@
 # This is the Labs repository for the Practical OpenShift for Developers course.
 
+https://towardsdatascience.com/sample-load-balancing-solution-with-docker-and-nginx-cf1ffc60e644
+
 How to stop a running Container:
 
 ```text
