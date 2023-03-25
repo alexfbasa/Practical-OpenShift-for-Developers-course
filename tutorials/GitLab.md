@@ -21,3 +21,22 @@ NETWORK=192.168.56.0
 BROADCAST=192.168.56.255
 ONBOOT=yes
 NAME=enp0s8
+
+service network restart
+
+https://docs.gitlab.com/ee/install/docker.html
+
+https://about.gitlab.com/install/#centos-7
+
+sudo docker run --detach \
+--hostname 192.168.56.102 \
+--publish 443:443 --publish 80:80 --publish 9222:22 \
+--name gitlab \
+--restart always \
+--volume $GITLAB_HOME/config:/etc/gitlab \
+--volume $GITLAB_HOME/logs:/var/log/gitlab \
+--volume $GITLAB_HOME/data:/var/opt/gitlab \
+--shm-size 256m \
+gitlab/gitlab-ee:latest
+
+## Memory parameter   
