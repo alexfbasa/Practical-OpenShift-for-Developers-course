@@ -141,6 +141,7 @@ To build the image for the Hello World source code, you first need to navigate t
 ```shell
 $ docker build .
 ```
+
 The docker build command requires the directory containing the source files for your image as the primary argument. In
 this case, the . specifies the current directory.
 
@@ -150,55 +151,110 @@ Dockerfile using the FROM instruction. The download may take some time, dependin
 If you are following along with the course, you should pause the video until your docker build command completes. This
 allows the build process to finish before moving on to the next step.
 
-## Source-to-Image (S2I)
+## Tagging a Container Image
 
-Source-to-Image (S2I) is a framework that simplifies the process of creating Docker images from application code. With
-S2I, you don't need to manually provide instructions in a Dockerfile. Instead, it takes your application code and
-generates a reusable Docker image by leveraging pre-built builder images.
+After building the image in the previous lesson, you should have received an output similar to the following:
 
-For example, in the previous exercise where we deployed the application using the Python catalog item, it automatically
-created a build configuration of type Source-to-Image build. S2I utilizes a pre-built Python builder image and injects
-your application code into it to create the final application image.
-
-If you need to modify the build strategy, you can edit the build configuration either through the web console interface
-or using a YAML file. For example, you can modify the build strategy in the nginx_build-conf.yaml file.
-
-S2I provides a convenient way to streamline the image building process, allowing developers to focus on their
-application code while leveraging pre-configured builder images to create container images effortlessly.
-
-```yaml
-apiVersion: build.openshift.io/v1
-kind: BuildConfig
-metadata:
-  name: python-app
-spec:
-  source:
-    type: Git
-    git:
-      uri: https://github.com/your-username/repo-name.git
-  strategy:
-    type: Source
-    sourceStrategy:
-      from:
-        kind: ImageStreamTag
-        name: python:latest
-  output:
-    to:
-      kind: ImageStreamTag
-      name: python-app:latest
+```text
+Successfully built <image_id>
 ```
 
-## Custom build
+To run this image, you need to know its image ID. Let's run the image using its ID.
 
-OpenShift provides Image Streams that enable you to use custom build strategies. Image Streams track and manage updates
-to an image, allowing you to use different versions of the image. You can create and manage Image Streams through the
-OpenShift web console or using YAML files.
+To run the image, use the docker run command with the -i and -t flags. These flags ensure that the container runs
+properly in the terminal. Copy the first line from your output, and combine it with the docker run command. Your command
+should look like this:
+
+```shell
+docker run -it <image_id>
+```
+
+Execute this command to run the image.
+
+You should see the startup message, indicating that the container is running. You can use Ctrl + C to exit the process.
+
+Random IDs like the one used in the command above are not ideal for communicating with others as they are not
+human-friendly. To give the image a more human-friendly name, you can add a tag.
+
+In Git, tags are named references to existing commits. Similarly, in containers, tags are named references to existing
+container images. Tags are essential for working with OpenShift and container-based development.
+
+You can specify a tag during the build process using the -t option with the docker build command. This will attach the
+tag to the image.
+
+To build the image with a different tag, you can use the same docker build command but specify a different tag.
+Instead of using your-app:latest, use your-app:your-tag in the command:
+
+```shell
+docker build -t your-app:your-tag .
+```
+
+This command will build the image with the specified tag and the current directory as the build context.
+
+After running the command, you will see the confirmation that the image has been built with the repository your-app and
+the tag your-tag.
+
+To verify the images, you can run docker images again. In the output, you will notice that both the latest and your-tag
+tags share the same image ID. This is because the repository and tag are metadata about the image and do not affect the
+runtime behavior of the container.
+
+## Hand-on-Openshift
+
+To log in to OpenShift and retrieve your access token, you can follow these steps:
+
+Access the OpenShift web console or command line interface.
+
+Obtain your access token from the web console. The process may vary depending on your OpenShift environment. Look for an
+option to retrieve or view your access token.
+
+Open a command line terminal.
+
+Run the following command, replacing YOUR_OCP_IP with the IP address or hostname of your OpenShift cluster and
+YOUR_TOKEN with the access token you obtained in the previous step:
+
+```shell
+oc login https://YOUR_OCP_IP:8443 --token=YOUR_TOKEN
+```
+
+This command will establish a connection to your OpenShift cluster using the specified IP address and access token.
+
+After successfully logging in, you can use the oc whoami or os whoami command to retrieve the username associated with
+your current session in the OpenShift cluster
 
 # PODs
 
-A Pod is a collection of one or more containers running together on a node. Each Pod in OpenShift runs in its own IP
-address and has its own set of resources. Here are some commands to interact with Pods:
+In OpenShift, containers are run within pods, which are a grouping mechanism for containers. The term "pod" is a play on
+the word used to describe a group of whales, indicating that multiple containers can be thought of as a pod or a group.
+Pods in OpenShift serve the purpose of running container-based applications in a reliable and cohesive manner. While we
+have been using a single container for our Hello World application so far, real-world applications often include
+additional containers within the same pod. These additional containers are commonly referred to as sidecar containers
+and can handle tasks such as logging, credential management, or proxies.
 
+OpenShift requires containers to run inside a pod, meaning that you cannot directly run a single container without a
+pod. However, it is possible to have a pod with just a single container, which is what we will use in this course,
+utilizing the Hello World container image specific to this course.
+
+To check if OpenShift is running, you can use the following commands:
+
+If you're using Minishift and the cluster has stopped, you can start it by running:
+```shell
+minishift start
+```
+To check the status of your OpenShift cluster, use the command:
+```shell
+oc status
+```
+To create a Pod on OpenShift based on a YAML file, use the following command:
+```shell
+oc create -f pods/pod.yaml
+```
+Replace pods/pod.yaml with the path to your specific YAML file.
+
+To show all currently running Pods in OpenShift, you can run:
+```shell
+oc get pods
+
+```
 ### Get Pod Documentation
 
 Get built-in documentation for Pods
@@ -412,3 +468,46 @@ oc get -o yaml configmap/<configmap-name>
 oc set env dc/hello-world --from cm/<configmap-name>
 oc set env dc/hello-world --from cm/message-map
 
+## Source-to-Image (S2I)
+
+Source-to-Image (S2I) is a framework that simplifies the process of creating Docker images from application code. With
+S2I, you don't need to manually provide instructions in a Dockerfile. Instead, it takes your application code and
+generates a reusable Docker image by leveraging pre-built builder images.
+
+For example, in the previous exercise where we deployed the application using the Python catalog item, it automatically
+created a build configuration of type Source-to-Image build. S2I utilizes a pre-built Python builder image and injects
+your application code into it to create the final application image.
+
+If you need to modify the build strategy, you can edit the build configuration either through the web console interface
+or using a YAML file. For example, you can modify the build strategy in the nginx_build-conf.yaml file.
+
+S2I provides a convenient way to streamline the image building process, allowing developers to focus on their
+application code while leveraging pre-configured builder images to create container images effortlessly.
+
+```yaml
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: python-app
+spec:
+  source:
+    type: Git
+    git:
+      uri: https://github.com/your-username/repo-name.git
+  strategy:
+    type: Source
+    sourceStrategy:
+      from:
+        kind: ImageStreamTag
+        name: python:latest
+  output:
+    to:
+      kind: ImageStreamTag
+      name: python-app:latest
+```
+
+## Custom build
+
+OpenShift provides Image Streams that enable you to use custom build strategies. Image Streams track and manage updates
+to an image, allowing you to use different versions of the image. You can create and manage Image Streams through the
+OpenShift web console or using YAML files.
