@@ -45,32 +45,6 @@ Instead, developers need to learn how to use a variety of tools called OpenShift
 to run their applications.
 OpenShift has many different resource types, each with its own unique functionality.
 
-```text
-[ User, DeploymentConfig, Build, ImageStream, Route, Project, ReplicationController, BuildConfig, ImageStreamTag]
-[ Template, Pod, ConfigMap, Secret, Service, Autoscaler (HPA)]
-```
-
-## Getting Started with OpenShift
-
-## Jenkins Demo
-
-One of the most powerful tools in OpenShift is the OpenShift command-line interface, also known as oc. This command-line
-tool simplifies application management and deployment on OpenShift.
-To start a Jenkins instance in OpenShift using the command-line interface, you can run the following command:
-
-```shell
-$oc new-app jenkins-ephemeral
-```
-
-## Setting up Credentials
-
-To ensure the security of your credentials, we provide a template file named credentials_template.env within the Labs
-project. You can copy or rename this file to credentials.env and populate it with your own values. This file will be
-used in various labs and walk throughout the course to set up your credentials and configuration.
-
-It is essential to keep this information confidential and avoid committing it to version control. To help with this, the
-credentials.env file is listed in the .gitignore file for the Labs directory.
-
 ## Docker Build Strategy
 
 The Docker build strategy is a commonly used approach in OpenShift for building container images. It involves creating a
@@ -82,9 +56,12 @@ registry.
 
 To follow along with the labs and exercises in this course, you will need a few prerequisites:
 Container Development Software: Make sure you have the necessary software installed, such as code editors, OpenShift
-Online, and Docker.
+Online, and Docker, all of these resources will set up with minishift.
 Online Accounts: You will need accounts on platforms like GitLab and Quay.io to complete some of the more complex labs.
 Please sign up for these accounts if you haven't already.
+
+* GitHub
+* Quay.io
 
 ## Hands-on-Docker
 
@@ -202,7 +179,13 @@ runtime behavior of the container.
 
 Minishift is a tool that allows you to run a single-node OpenShift cluster on your local machine for development and
 testing purposes. It is designed to provide a lightweight and easy-to-use OpenShift environment.
+You can easily run a minishift cluster just executing that line:
 
+```shell
+minishift start
+```
+
+However, additional parameters can be defined.
 If you're using Minishift and the cluster has stopped, you can start it by running:
 
 ```shell
@@ -212,19 +195,26 @@ minishift config set vm-driver virtualbox
 ```shell
 minishift start --cpus 2 --memory "16GB"
 ```
+
 Passing Proxy definitions
+
 ```shell
 minishift start --cpus 2 --memory "16GB"  --show-libmachine-logs --vm-driver virtualbox --http-proxy http://proxy:3128 --https-proxy http://proxy:3128 --no-proxy localhost,.proxy.fr,127.0.0.1,.proxy.net,192.168.99.100
 ```
+
 Passing Proxy definitions to the Docker service
+
 ```shell
 minishift start --cpus 2 --memory "16GB" --docker-env HTTP_PROXY=http://proxy:3128  --docker-env HTTPS_PROXY=http://http://proxy:3128  --docker-env NO_PROXY=.int.kn,*.int.kn
 ```
-Passing Proxy definitions everywhere. 
+
+Passing Proxy definitions everywhere.
+
 ```shell
 minishift start --cpus 2 --memory "16GB" --http-proxy http://proxy:3128  --https-proxy http://proxy:3128  --no-proxy .int.com,*.int.com --docker-env HTTP_PROXY=http://proxy:3128 --docker-env HTTPS_PROXY=http://proxy:3128  --docker-env NO_PROXY=.int.com,*.int.com,172.30.1.1
 
 ```
+
 If your minishift got successfully running, you will get an output like that:
 
 ```text
@@ -274,6 +264,39 @@ and can handle tasks such as logging, credential management, or proxies.
 OpenShift requires containers to run inside a pod, meaning that you cannot directly run a single container without a
 pod. However, it is possible to have a pod with just a single container, which is what we will use in this course,
 utilizing the Hello World container image specific to this course.
+
+## Pod Vs Container
+
+* Pod:
+  In OpenShift, a pod is the smallest and simplest unit of deployment. It represents a group of one or more containers
+  that are scheduled and run together on the same host.
+  A pod provides a cohesive and isolated environment for containers to run within. It encapsulates multiple containers
+  and
+  their shared resources, such as networking and storage.
+  Containers within a pod share the same network namespace, allowing them to communicate with each other using localhost
+  or private IP addresses.
+  Pods are designed to be ephemeral and disposable. They can be easily created, scaled, replicated, and destroyed as
+  needed.
+  Pods can be managed and orchestrated by OpenShift, which handles scheduling, load balancing, scaling, and other
+  management aspects.
+
+* Docker Container:
+  A Docker container is a lightweight and standalone executable package that includes everything needed to run an
+  application, including the code, runtime, system tools, libraries, and dependencies.
+  Containers created using Docker are typically single entities, representing a specific application or service.
+  Docker containers are designed to be portable and consistent across different environments. They can be easily shared,
+  distributed, and run on different hosts or platforms that support Docker.
+  Containers created with Docker are isolated from the host system and other containers, providing process-level
+  isolation
+  and resource management.
+  Docker containers can be built, deployed, and managed using Docker tools and technologies.
+  In summary, a pod in OpenShift is a higher-level construct that manages one or more containers and provides an
+  environment for them to run together. It offers additional features and abstractions for managing groups of
+  containers.
+  On the other hand, a Docker container is a standalone unit that encapsulates an application and its dependencies,
+  providing portability and consistency across different environments. OpenShift can utilize Docker containers as part
+  of
+  its pod-based architecture.
 
 ## Creating Pods from files
 
@@ -346,32 +369,49 @@ overall structure of the YAML file.
 
 ## DeploymentConfig
 
-Deployment configs are an important resource in OpenShift that go beyond individual pods. They provide automation and
-additional configuration options for managing pods effectively. Unlike Kubernetes, deployment configs are specific to
-OpenShift.
+A DeploymentConfig in OpenShift is a resource that provides advanced automation and configuration options for managing
+pods effectively. It extends the functionality of individual pods and allows for more controlled and automated
+deployments. Here are some key points about DeploymentConfig:
 
-To fully understand deployment configs, you can use the oc explain deploymentconfig command in an OpenShift cluster to
-access the comprehensive documentation.
+* Unlike Kubernetes, DeploymentConfig is specific to OpenShift and provides additional features and capabilities
+  tailored
+  for OpenShift environments.
+* To access comprehensive documentation about DeploymentConfig and its properties, you can use the:
 
 ```shell
 oc explain deploymentconfig
 ```
 
-At its core, a deployment config defines the template for a pod and handles the deployment of new images or
-configuration changes. The template for a pod within a deployment config follows the same format as regular pods, and it
-is specified under the template property in the deployment config's spec.
+command in an OpenShift cluster.
 
-One crucial aspect of deployment configs is the replicas parameter in the spec field. This parameter determines the
-number of pod instances the deployment config should run. If there aren't enough instances, the deployment config will
-start new pods based on the template until it reaches the specified number of replicas. Conversely, if there are excess
-pods (e.g., when reducing the replicas value), the deployment config will delete pods until reaching the desired number.
+* A DeploymentConfig defines the template for a pod and manages the deployment process, including updating images or
+  making configuration changes.
+* The template for a pod within a DeploymentConfig follows the same format as regular pods in OpenShift and is specified
+  under the template property in the spec section of the DeploymentConfig.
+* The `replicas` parameter in the `spec` section of a DeploymentConfig is crucial as it determines the desired number of
+  pod
+  instances to be running.
+*
+    * If there are not enough instances running, the DeploymentConfig automatically starts new pods based on the
+      template
+      until the desired number of replicas is reached.
+*
+    * If there are excess pods (e.g., when reducing the replicas value), the DeploymentConfig automatically scales down
+      by
+      deleting pods until reaching the desired number.
+* DeploymentConfig also provides other capabilities and behaviors, such as:
+*
+    * Automatic triggering of new deployments based on changes in the pod template or image.
+*
+    * Control over deployment strategies, such as rolling updates or blue-green deployments.
+*
+    * Integration of custom behavior using lifecycle hooks to perform actions during the deployment process.
+* DeploymentConfig is typically written in YAML format, allowing you to define and configure its properties and
+  behaviors
+  in a structured manner.
 
-Deployment configs handle various other behaviors, such as:
-
-* Automatically triggering new deployments
-* Controlling
-* Deployment details
-* Incorporating custom behavior using lifecycle hooks.
+By leveraging DeploymentConfig in OpenShift, you can effectively manage and automate the deployment of pods and ensure
+scalability, reliability, and consistency in your application deployments.
 
 ````yaml
 apiVersion: apps.openshift.io/v1 # Specifies the API version for the DeploymentConfig.
@@ -409,7 +449,13 @@ To create a deployment config based on an image tag, the primary command is oc n
 pre-built image using the hello world image from this course. The command is:
 
 ````shell
-$ oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config 
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config 
+````
+
+If you are running it and getting security certification issues:
+
+````shell
+oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config --insecure-registry
 ````
 
 The output of the command shows the plan for creating the deployment config and related resources. It includes the
@@ -440,17 +486,23 @@ and to check the status of your OpenShift cluster. The output of oc status shoul
 config, image stream tag, and one pod. If these resources are not present, you may need to refer to the previous lesson
 and deploy the application using oc new-app.
 You can check if the Pod is up and running:
+
 ```shell
 oc get svc
 ```
+
 And even though you can check the deployment config.
+
 ```shell
 oc get dc
 ```
+
 And you can also check if there is an image stream tag.
+
 ```shell
 oc get istage
 ```
+
 Once you have confirmed that everything is running, you can proceed to delete the resources. To delete a service, you
 can use the oc delete svc command. Here, "svc" is an abbreviation for service. Run the following command:
 
@@ -458,11 +510,14 @@ can use the oc delete svc command. Here, "svc" is an abbreviation for service. R
 oc delete svc <service-name>
 ```
 
+Deleting resources one-by-one
+
 ```shell
 oc delete svc/hello-world
 oc delete dc/hello-world
 oc delete istag hello-world:version
 ```
+
 Replace <service-name> with the actual name of your service. This command will delete the specified service.
 
 Remember to replace <service-name> with the actual name of the service you want to delete. You can find the name of the
@@ -473,6 +528,56 @@ can use oc delete dc <deployment-config-name>, and to delete the image stream ta
 image-stream-tag-name>.
 
 Make sure to exercise caution when deleting resources, as it cannot be undone.
+
+### Deleting multiples types of resources at once.
+
+Check the project label.
+
+```shell
+oc describe dc/hello-world
+```
+
+output
+
+```text
+Name:           hello-world
+Namespace:      myproject
+Created:        2 minutes ago
+Labels:         app=hello-world
+                app.kubernetes.io/component=hello-world
+```
+
+```shell
+oc delete all -l app=hello-world
+```
+
+You can confirm if all the resources was deleted.
+
+```shell
+oc status
+```
+
+### Naming your DeploymentConfig
+
+Create a DeploymentConfig with a Custom Name
+
+```shell
+oc new-app quay.io/practicalopenshift/hello-world --name demo-app --as-deployment-config --insecure-registry
+```
+```shell
+oc new-app quay.io/practicalopenshift/hello-world --name demo-app-2 --as-deployment-config --insecure-registry
+```
+
+`--name demo-app`: This flag specifies the custom name you want to assign to the DeploymentConfig. Replace demo-app with
+your desired name
+Verify the DeploymentConfig Name
+```shell
+oc describe dc/demo-app
+```
+```shell
+oc delete all -l app=demo-app
+```
+
 
 ## Port forwarding for Pods
 
@@ -545,7 +650,6 @@ oc get istag
 ```
 
 oc delete also works with different types of resources
-
 
 Describe the DC to get its labels
 oc describe dc/hello-world
