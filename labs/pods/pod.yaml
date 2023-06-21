@@ -6,10 +6,16 @@ metadata:
     app: hello-world-pod
 spec:
   containers:
-  - env:
-    - name: MESSAGE
-      value: Hi! I'm an environment variable
-    image: quay.io/practicalopenshift/hello-world
-    imagePullPolicy: Always
-    name: hello-world-override
-    resources: {}
+    - env:
+        - name: MESSAGE
+          value: Hi! I'm an environment variable
+        - name: HTTPS_PROXY
+          value: http://proxy:80
+        - name: HTTP_PROXY
+          value: http://proxy:80
+        - name: no_proxy
+          value: ".localhost,127.0.0.1"
+      image: quay.io/practicalopenshift/hello-world
+      imagePullPolicy: Always
+      name: hello-world-override
+      resources: {}

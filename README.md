@@ -133,7 +133,7 @@ of running containers.
 
 To build the image for the Hello World source code, you first need to navigate to its directory. Follow these steps:
 
-* Go to the labs directory.
+* Go to the labs' directory.
 * Change into the Hello World Go directory.
   Once you are in the correct directory, you can proceed with the Docker Build command. Here's the command you need to
   run:
@@ -198,6 +198,47 @@ To verify the images, you can run docker images again. In the output, you will n
 tags share the same image ID. This is because the repository and tag are metadata about the image and do not affect the
 runtime behavior of the container.
 
+# Minishift
+
+Minishift is a tool that allows you to run a single-node OpenShift cluster on your local machine for development and
+testing purposes. It is designed to provide a lightweight and easy-to-use OpenShift environment.
+
+If you're using Minishift and the cluster has stopped, you can start it by running:
+
+```shell
+minishift config set vm-driver virtualbox
+```
+
+```shell
+minishift start --cpus 2 --memory "16GB"
+```
+Passing Proxy definitions
+```shell
+minishift start --cpus 2 --memory "16GB"  --show-libmachine-logs --vm-driver virtualbox --http-proxy http://proxy:3128 --https-proxy http://proxy:3128 --no-proxy localhost,.proxy.fr,127.0.0.1,.proxy.net,192.168.99.100
+```
+Passing Proxy definitions to the Docker service
+```shell
+minishift start --cpus 2 --memory "16GB" --docker-env HTTP_PROXY=http://proxy:3128  --docker-env HTTPS_PROXY=http://http://proxy:3128  --docker-env NO_PROXY=.int.kn,*.int.kn
+```
+Passing Proxy definitions everywhere. 
+```shell
+minishift start --cpus 2 --memory "16GB" --http-proxy http://proxy:3128  --https-proxy http://proxy:3128  --no-proxy .int.com,*.int.com --docker-env HTTP_PROXY=http://proxy:3128 --docker-env HTTPS_PROXY=http://proxy:3128  --docker-env NO_PROXY=.int.com,*.int.com,172.30.1.1
+
+```
+If your minishift got successfully running, you will get an output like that:
+
+```text
+The server is accessible via web console at:
+    https://192.168.99.102:8443/console
+
+You are logged in as:
+    User:     developer
+    Password: <any value>
+
+To login as administrator:
+    oc login -u system:admin
+```
+
 ## Hand-on-Openshift
 
 To log in to OpenShift and retrieve your access token, you can follow these steps:
@@ -221,7 +262,7 @@ This command will establish a connection to your OpenShift cluster using the spe
 After successfully logging in, you can use the oc whoami or os whoami command to retrieve the username associated with
 your current session in the OpenShift cluster
 
-# PODs
+## PODs
 
 In OpenShift, containers are run within pods, which are a grouping mechanism for containers. The term "pod" is a play on
 the word used to describe a group of whales, indicating that multiple containers can be thought of as a pod or a group.
@@ -234,28 +275,37 @@ OpenShift requires containers to run inside a pod, meaning that you cannot direc
 pod. However, it is possible to have a pod with just a single container, which is what we will use in this course,
 utilizing the Hello World container image specific to this course.
 
-To check if OpenShift is running, you can use the following commands:
+## Creating Pods from files
 
-If you're using Minishift and the cluster has stopped, you can start it by running:
-```shell
-minishift start
+To create a Pod on OpenShift based on a YAML file, use the following command:
+Go to the folder labs\pods
+
+```text
+oc create -f pods/pod.yaml
 ```
-To check the status of your OpenShift cluster, use the command:
+
+Show all currently running Pods
+
+```text
+oc get pods
+```
+
 ```shell
 oc status
 ```
-To create a Pod on OpenShift based on a YAML file, use the following command:
+
 ```shell
 oc create -f pods/pod.yaml
 ```
-Replace pods/pod.yaml with the path to your specific YAML file.
 
+Replace pods/pod.yaml with the path to your specific YAML file.
 To show all currently running Pods in OpenShift, you can run:
+
 ```shell
 oc get pods
-
 ```
-### Get Pod Documentation
+
+## Get Pod Documentation
 
 Get built-in documentation for Pods
 
@@ -275,19 +325,154 @@ Get details on the pod's containers
 oc explain pod.spec.containers
 ```
 
-## Creating Pods from files
+The oc command-line tool is used to interact with OpenShift clusters from the command line. It provides various
+functionalities to manage resources, including querying and manipulating YAML files.
+To explain the path to a specific property in a YAML file using oc, you need to identify the keys or fields that lead to
+the desired property. In your case, the keys are spec, containers, and env, and the desired property is located at
+spec.containers.env in the YAML file.
 
-Create a Pod on OpenShift based on a file
+You can use the following command to extract information about the env property within the YAML file:
 
-```text
-oc create -f pods/pod.yaml
+```shell
+oc explain pod.spec.containers.env
 ```
 
-Show all currently running Pods
+This command will provide you with details about the env property, including its type (an array of objects), and the
+fields for the objects within the array (such as name and value).
 
-```text
-oc get pods
+By following this approach, you can explore and understand the structure of complex resources like deployment configs or
+any other OpenShift YAML definition. It allows you to retrieve information about specific properties and understand the
+overall structure of the YAML file.
+
+## DeploymentConfig
+
+Deployment configs are an important resource in OpenShift that go beyond individual pods. They provide automation and
+additional configuration options for managing pods effectively. Unlike Kubernetes, deployment configs are specific to
+OpenShift.
+
+To fully understand deployment configs, you can use the oc explain deploymentconfig command in an OpenShift cluster to
+access the comprehensive documentation.
+
+```shell
+oc explain deploymentconfig
 ```
+
+At its core, a deployment config defines the template for a pod and handles the deployment of new images or
+configuration changes. The template for a pod within a deployment config follows the same format as regular pods, and it
+is specified under the template property in the deployment config's spec.
+
+One crucial aspect of deployment configs is the replicas parameter in the spec field. This parameter determines the
+number of pod instances the deployment config should run. If there aren't enough instances, the deployment config will
+start new pods based on the template until it reaches the specified number of replicas. Conversely, if there are excess
+pods (e.g., when reducing the replicas value), the deployment config will delete pods until reaching the desired number.
+
+Deployment configs handle various other behaviors, such as:
+
+* Automatically triggering new deployments
+* Controlling
+* Deployment details
+* Incorporating custom behavior using lifecycle hooks.
+
+````yaml
+apiVersion: apps.openshift.io/v1 # Specifies the API version for the DeploymentConfig.
+kind: DeploymentConfig           # Indicates the type of resource, which is a DeploymentConfig.
+metadata:
+  name: my-app                   # Sets the name of the DeploymentConfig as "my-app".
+spec:
+  replicas: 3                    # Number of pod replicas to maintain
+  selector:
+    app: my-app                  # Selector for identifying pods managed by this DeploymentConfig
+  template:
+    metadata:
+      labels:
+        app: my-app              # Labels for identifying pods created from this template
+    spec:
+      containers:
+        - name: my-app-container   # Name of the container within the pod
+          image: myregistry/my-app-image:latest   # Container image to use
+          ports:
+            - containerPort: 8080    # Port to expose within the container
+          resources:
+            limits:
+              cpu: "1"             # Maximum CPU limit for the container
+              memory: "512Mi"      # Maximum memory limit for the container
+            requests:
+              cpu: "0.5"           # CPU resource request for the container
+              memory: "256Mi"      # Memory resource request for the container
+````
+
+## Hands on DeploymentConfig
+
+OpenShift and the oc command line tool offer simple methods for creating deployment configs based on various inputs.
+
+To create a deployment config based on an image tag, the primary command is oc new-app. In this lesson, we'll deploy a
+pre-built image using the hello world image from this course. The command is:
+
+````shell
+$ oc new-app quay.io/practicalopenshift/hello-world --as-deployment-config 
+````
+
+The output of the command shows the plan for creating the deployment config and related resources. It includes the
+creation of an image stream tag to track the image, a deployment config, and a service for load balancing. The status of
+resource creation is indicated in the plan output, with "created" indicating successful creation.
+
+The message about the application not being exposed is related to OpenShift's networking tiers. To access the
+application from outside the OpenShift cluster, you need to create a service and expose it.
+
+Running oc status provides an overview of the resources currently running in your project. It shows the service,
+deployment config, image stream tag, and information about the running pod.
+
+To check the running pods created by the deployment config, you can use the oc get pods command.
+
+By running oc new-app and oc status, the deployment config is successfully created and managed, resulting in the running
+of a pod for the application.
+
+That concludes this lesson, and we'll continue with the next one.
+
+#### Deleting DeploymentConfig
+
+To delete resources like deployment configs in OpenShift, you can use the oc delete command, just like you did with
+pods. When you run oc delete with the deployment config, it will send an HTTP request to the OpenShift REST API using
+the DELETE verb.
+
+Before deleting the deployment config, it's recommended to run oc status to ensure that your deployment is still running
+and to check the status of your OpenShift cluster. The output of oc status should include the service, deployment
+config, image stream tag, and one pod. If these resources are not present, you may need to refer to the previous lesson
+and deploy the application using oc new-app.
+You can check if the Pod is up and running:
+```shell
+oc get svc
+```
+And even though you can check the deployment config.
+```shell
+oc get dc
+```
+And you can also check if there is an image stream tag.
+```shell
+oc get istage
+```
+Once you have confirmed that everything is running, you can proceed to delete the resources. To delete a service, you
+can use the oc delete svc command. Here, "svc" is an abbreviation for service. Run the following command:
+
+```shell
+oc delete svc <service-name>
+```
+
+```shell
+oc delete svc/hello-world
+oc delete dc/hello-world
+oc delete istag hello-world:version
+```
+Replace <service-name> with the actual name of your service. This command will delete the specified service.
+
+Remember to replace <service-name> with the actual name of the service you want to delete. You can find the name of the
+service by running oc get svc.
+
+You can also use similar commands to delete other types of resources. For example, to delete the deployment config, you
+can use oc delete dc <deployment-config-name>, and to delete the image stream tag, you can use oc delete istag <
+image-stream-tag-name>.
+
+Make sure to exercise caution when deleting resources, as it cannot be undone.
 
 ## Port forwarding for Pods
 
@@ -325,12 +510,6 @@ oc delete <resource type> <resource name>
 (# Delete the pod for this section)
 oc delete pod hello-world-pod
 
-# DeploymentConfig
-
-You can think of deployment configs as going one step further and being a collection of pods.
-Using a deployment config to manage your pods is much better than trying to do it manually.
-Deployment configs bring a lot of automation and extra configuration options to your pods.
-
 ```text
 Deployment configs define the template for a pod and manage deploying new images or configuration changes.
 ```
@@ -367,11 +546,6 @@ oc get istag
 
 oc delete also works with different types of resources
 
-```shell
-oc delete svc/hello-world
-oc delete dc/hello-world
-oc delete istag hello-world:version
-```
 
 Describe the DC to get its labels
 oc describe dc/hello-world
@@ -419,8 +593,11 @@ wget -qO- <service IP : Port>
 Inside the pod, get all environment variables
 env
 
-Use the environment variables with wget
+Use the environment variables with wget:
+
+```shell
 wget -qO- $HELLO_WORLD_POD_PORT_8080_TCP_ADDR:$HELLO_WORLD_POD_PORT_8080_TCP_PORT
+```
 
 Create a Route based on a Service
 oc expose svc/hello-world
