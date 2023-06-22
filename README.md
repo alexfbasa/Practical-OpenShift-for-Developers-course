@@ -564,6 +564,7 @@ Create a DeploymentConfig with a Custom Name
 ```shell
 oc new-app quay.io/practicalopenshift/hello-world --name demo-app --as-deployment-config --insecure-registry
 ```
+
 ```shell
 oc new-app quay.io/practicalopenshift/hello-world --name demo-app-2 --as-deployment-config --insecure-registry
 ```
@@ -571,14 +572,101 @@ oc new-app quay.io/practicalopenshift/hello-world --name demo-app-2 --as-deploym
 `--name demo-app`: This flag specifies the custom name you want to assign to the DeploymentConfig. Replace demo-app with
 your desired name
 Verify the DeploymentConfig Name
+
 ```shell
 oc describe dc/demo-app
 ```
+
 ```shell
 oc delete all -l app=demo-app
 ```
 
+```shell
+oc delete all -l app=demo-app-2
+```
 
+## Deployment from Git
+
+In addition to deploying applications from pre-built images, OpenShift allows you to deploy applications directly from
+Git repositories. This tutorial will guide you through the process of deploying an ap
+
+```shell
+oc new-app https://gitlab.com/practical-openshift/hello-world.git --as-deployment-config --insecure-registry
+```
+
+Explanation:
+
+* `oc new-app`: This command creates a new application.
+* `https://gitlab.com/practical-openshift/hello-world.git`: Replace this URL with the URL of your Git repository
+  containing the application's source code.
+* `--as-deployment-config`: This flag specifies that you want to create a DeploymentConfig instead of a basic
+  deployment.
+  When you use the oc new-app command with a Git repository as the source code, OpenShift follows a series of steps to
+  build and deploy the application. Let's break down the process and the output you mentioned:
+
+OpenShift attempts to download the Golang Alpine image specified in the Dockerfile of your Git repository. It does this
+by importing the image into its internal registry and creating an image stream tag for it.
+
+OpenShift sets up a trigger for the Golang Alpine image stream tag. This trigger ensures that whenever the Golang Alpine
+image stream tag changes, a new build will be initiated.
+
+A Docker build is created using the source code from your Git repository. OpenShift goes through the Dockerfile
+instructions step by step, creating intermediate containers for each instruction.
+
+The resulting image from the Docker build is pushed to a new image stream tag.
+
+OpenShift creates a new deployment config named "Hello World" to deploy the application. The deployment config specifies
+that the application will be load balanced on port 8080 by a service.
+
+The warning line you mentioned indicates that running the image directly on Golang Alpine may cause security constraints
+in OpenShift. However, the "Hello World" image uses the user command, which follows OpenShift standards and complies
+with its security controls.
+
+In the creation section of the output, you can see that OpenShift successfully creates the Golang image stream, the "
+Hello World" image stream, the "Hello World" build config, the "Hello World" deployment config, and the "Hello World"
+service.
+
+The success area of the output mentions that a build was scheduled. Builds in OpenShift are resources that produce
+images from source, similar to Docker builds. The build process can be tracked using the oc logs -f command followed by
+the build config name.
+Check the status of the DeploymentConfig:
+
+```shell
+oc describe dc/hello-world
+oc logs -f bc/hello-world
+
+oc delete all -l app=hello-world
+```
+
+## Git and Openshift
+
+Suppose you have a Git repository with the following file structure:
+
+- nginx-app/
+    - Dockerfile
+    - index.html
+
+In the Dockerfile a simple Nginx service.
+
+```dockerfile
+# Use the Nginx base image
+FROM nginx:latest
+
+# Copy the index.html file to the root directory of Nginx
+COPY index.html /usr/share/nginx/html
+```
+
+You can run your nginx from your git by the command:
+
+```shell
+oc new-app https://github.com/your-user/nginx-app.git --as-deployment-config
+```
+
+This will create an application in OpenShift based on your Git repository. OpenShift will automatically detect the
+Dockerfile and create a build config to build the container image. It will then deploy the application using a
+deployment config.
+
+``````
 ## Port forwarding for Pods
 
 #### Open a local port that forwards traffic to a pod
