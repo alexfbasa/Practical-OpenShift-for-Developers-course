@@ -4,7 +4,6 @@ Welcome to the Labs repository for the Practical OpenShift for Developers course
 resources, tutorials, and hands-on exercises to help you learn and master OpenShift, a powerful container platform.
 
 
-
 ## Hand-on-Openshift
 
 To log in to OpenShift and retrieve your access token, you can follow these steps:
@@ -27,52 +26,6 @@ This command will establish a connection to your OpenShift cluster using the spe
 
 After successfully logging in, you can use the oc whoami or os whoami command to retrieve the username associated with
 your current session in the OpenShift cluster
-
-## PODs
-
-In OpenShift, containers are run within pods, which are a grouping mechanism for containers. The term "pod" is a play on
-the word used to describe a group of whales, indicating that multiple containers can be thought of as a pod or a group.
-Pods in OpenShift serve the purpose of running container-based applications in a reliable and cohesive manner. While we
-have been using a single container for our Hello World application so far, real-world applications often include
-additional containers within the same pod. These additional containers are commonly referred to as sidecar containers
-and can handle tasks such as logging, credential management, or proxies.
-
-OpenShift requires containers to run inside a pod, meaning that you cannot directly run a single container without a
-pod. However, it is possible to have a pod with just a single container, which is what we will use in this course,
-utilizing the Hello World container image specific to this course.
-
-## Pod Vs Container
-
-* Pod:
-  In OpenShift, a pod is the smallest and simplest unit of deployment. It represents a group of one or more containers
-  that are scheduled and run together on the same host.
-  A pod provides a cohesive and isolated environment for containers to run within. It encapsulates multiple containers
-  and
-  their shared resources, such as networking and storage.
-  Containers within a pod share the same network namespace, allowing them to communicate with each other using localhost
-  or private IP addresses.
-  Pods are designed to be ephemeral and disposable. They can be easily created, scaled, replicated, and destroyed as
-  needed.
-  Pods can be managed and orchestrated by OpenShift, which handles scheduling, load balancing, scaling, and other
-  management aspects.
-
-* Docker Container:
-  A Docker container is a lightweight and standalone executable package that includes everything needed to run an
-  application, including the code, runtime, system tools, libraries, and dependencies.
-  Containers created using Docker are typically single entities, representing a specific application or service.
-  Docker containers are designed to be portable and consistent across different environments. They can be easily shared,
-  distributed, and run on different hosts or platforms that support Docker.
-  Containers created with Docker are isolated from the host system and other containers, providing process-level
-  isolation
-  and resource management.
-  Docker containers can be built, deployed, and managed using Docker tools and technologies.
-  In summary, a pod in OpenShift is a higher-level construct that manages one or more containers and provides an
-  environment for them to run together. It offers additional features and abstractions for managing groups of
-  containers.
-  On the other hand, a Docker container is a standalone unit that encapsulates an application and its dependencies,
-  providing portability and consistency across different environments. OpenShift can utilize Docker containers as part
-  of
-  its pod-based architecture.
 
 ## Creating Pods from files
 
