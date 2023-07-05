@@ -9,6 +9,10 @@ spec:
   - env:
     - name: MESSAGE
       value: Hi! I'm an environment variable in pod 2
+    - name: HTTP_PROXY
+      value: http://proxy:80
+    - name: HTTPS_PROXY
+      value: https://proxy:80
     image: quay.io/practicalopenshift/hello-world
     imagePullPolicy: Always
     name: hello-world-override

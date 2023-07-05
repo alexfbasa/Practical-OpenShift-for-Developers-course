@@ -3,7 +3,6 @@
 Welcome to the Labs repository for the Practical OpenShift for Developers course. In this repository, you will find
 resources, tutorials, and hands-on exercises to help you learn and master OpenShift, a powerful container platform.
 
-
 ## Hand-on-Openshift
 
 To log in to OpenShift and retrieve your access token, you can follow these steps:
@@ -395,8 +394,102 @@ This will create an application in OpenShift based on your Git repository. OpenS
 Dockerfile and create a build config to build the container image. It will then deploy the application using a
 deployment config.
 
-``````
-## Port forwarding for Pods
+## Networking
+
+OpenShift provides a network abstraction called a "service" to enable network access to Pods. You can use
+the `oc explain service` command to get detailed documentation about services in OpenShift.
+
+The concept of a service in OpenShift is an abstraction of a software service. Regardless of the number of Pods running
+your application, you only need one service to expose all of them to the network. External applications interacting with
+your application are unaware of the underlying Pods and communicate with the service to access it. The service handles
+the distribution of traffic among the Pods, providing the abstraction layer.
+
+Services in OpenShift depend on a proxy and a selector. The proxy refers to the internally exposed IP and port that the
+service listens on. This IP is only accessible within the OpenShift cluster and is commonly referred to as a virtual IP.
+Other applications within the cluster can access your service using this virtual IP. Services also expose a port, such
+as port 3306 for MySQL or port 8080 for the Hello World application in the example.
+
+To access a service from outside your cluster, you need to use another OpenShift resource called a "Route." Routes allow
+external access to services by exposing them to external IP addresses and ports. Routes will be covered in more detail
+later in the documentation section.
+
+The most important configuration options for services are found in the `spec` field. You can use
+the `oc explain service spec` command to explore the details of the `spec` field and its available configuration
+options.
+
+One of the fields in the `spec` is the cluster IP, which represents the virtual IP assigned to the service by OpenShift.
+This IP is only exposed within the OpenShift cluster and enables communication between other Pods within the cluster and
+the service.
+
+Additionally, the `spec` field contains a list of ports exposed by the service, allowing you to define the ports used by
+your application. The `selector` field specifies how selectors work and provides more information about how services
+route traffic to the appropriate Pods.
+
+Feel free to explore further options and details using the `oc explain` command with the appropriate parameters.
+
+If you have any more questions or need further assistance, please let me know!
+
+## Creating an OpenShift Network Service
+
+To establish an OpenShift service that allows requests from another pod within our cluster, follow these steps:
+
+Start by ensuring that you have a running OpenShift pod. Execute the following command to create the pod:
+```shell
+oc create -f labs/pod.yaml
+```
+Upon completion of the command, your first pod will be created successfully.
+
+Now, let's proceed with creating a service for the pod. Utilize the following command:
+```shell
+oc expose --port (port_number) pod/pod_name
+```
+You will receive a concise status message, indicating successful exposure instead of the usual "created" message
+obtained from other commands.
+
+Verify the success of the oc expose command by using the `oc status` command. This will confirm whether the service and
+pod are correctly configured.
+
+Upon receiving the results from oc status, you should observe the service listed, with the associated pod beneath it.
+This indicates that the service has been set up correctly.
+
+It's important to note that services are internally exposed within the OpenShift cluster through a virtual IP, as
+explained in the previous lesson.
+
+To validate the service fully, let's create another pod and make a network request from the second pod to the first one.
+Use the following command to set up the second pod:
+```shell
+oc create -f pods/pod2.yaml
+```
+After the command completes, your second pod will be created.
+To open a shell in the second pod, use the following command:
+```shell
+oc exec -it pod/pod2 -- /bin/sh
+```
+Upon execution, you should see a simple prompt displaying the current directory and a dollar sign as the prompt.
+
+Now, we will make a request to the newly created service. The question that arises is: which IP does OpenShift use for
+the service? There are a couple of options to find the virtual IP for a service.
+
+The first option is to check the output of oc status. The IP will be displayed next to the service line.
+For our initial request, we will use the IP and port obtained from oc status to make the network request between the two
+pods.
+In previous lessons, we primarily used the curl command, but the Hello World pods do not have curl installed. Instead,
+we will use the wget command. Use the following command to make the request:
+
+less
+Copy code
+wget -qO- (service_IP:port)
+Replace (service_IP:port) with the appropriate values obtained from oc status.
+
+After running the command, you should receive the "Hello World" output:
+css
+Copy code
+Hi! I'm an environment variable.
+This message corresponds to the one specified in the pod YAML definition.
+
+In this lesson, you learned how to access the application over the internal OpenShift network using a service. However,
+relying solely on oc status to find your pods within the cluster is not recommended. In the next lesson, we will explore
+a more robust method of accessing the same pod over the network using environment variables. See you there!
 
 #### Open a local port that forwards traffic to a pod
 
