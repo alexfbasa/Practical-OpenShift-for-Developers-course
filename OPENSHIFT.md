@@ -106,6 +106,150 @@ utilizing the Hello World container image specific to this course.
   providing portability and consistency across different environments. OpenShift can utilize Docker containers as part
   of its pod-based architecture.
 
+## Network Services
+
+In OpenShift, network services play a crucial role in enabling communication and connectivity between various components
+within a cluster. They facilitate the interaction between applications, services, and external clients. Let's explore
+some of the key network services in OpenShift:
+
+1. **Service**: A Service in OpenShift provides stable, internal network access to a set of pods that perform the same
+   function. It acts as an abstraction layer that decouples the pods from the consuming clients. Services are assigned a
+   virtual IP address and are responsible for load balancing traffic among the pods associated with them. Services can
+   be exposed internally within the cluster or externally to the outside world.
+
+2. **Route**: A Route is an OpenShift resource that exposes services to the external network. It provides external
+   access to applications running within the cluster. Routes define an HTTP or HTTPS ingress point that allows traffic
+   to be directed to a specific service. With Routes, you can access applications using a fully qualified domain name (
+   FQDN) rather than relying on the cluster's internal IP addresses.
+
+3. **Ingress**: Ingress is an API object that manages external access to services within an OpenShift cluster. It
+   provides a way to control and configure how inbound traffic is routed to services. Ingress resources define rules and
+   configurations for routing HTTP and HTTPS traffic to different services based on hostnames, paths, or other criteria.
+   Ingress can be used to expose multiple services under a single domain or subdomain.
+
+4. **Load Balancer**: A Load Balancer is a network service that distributes incoming network traffic across a set of
+   backend pods or services. In OpenShift, a Load Balancer is typically used when deploying on cloud providers that
+   offer load balancer services. When you expose a Service using a Load Balancer, the cloud provider provisions a load
+   balancer that forwards traffic to the Service.
+
+5. **ClusterIP**: ClusterIP is a type of Service that provides internal network access to the pods within an OpenShift
+   cluster. It assigns a stable IP address to the Service within the cluster's virtual network. ClusterIP Services are
+   accessible only from within the cluster and are not exposed to external clients.
+
+These network services in OpenShift facilitate communication and connectivity between various components, allowing for
+scalable and reliable deployment of applications. They provide mechanisms for load balancing, external access, routing,
+and service discovery, making it easier to manage and expose services within the cluster.
+
+## Routes
+
+When working with OpenShift, you often need to expose your applications to external users or integrate them with
+external services. For this purpose, OpenShift provides an external network interface called a Route.
+
+A Route in OpenShift allows you to give an external DNS name to a service and expose your application for access from
+outside the cluster. Let's walk through the process step by step:
+
+To create a Route, we'll use the `oc expose` command. This command determines whether to create a Route or a Service
+based on the argument you provide.
+If you pass a Service or Deployment Config as an argument to oc expose, OpenShift will create a Route for you. For
+example, let's say we have a Service called "hello-world" that we want to expose externally. We can use the command:
+
+## ConfigMap
+
+ConfigMaps are a way to store and manage configuration data separately from the application code. They allow you to
+externalize configuration settings and make them available to your application pods as environment variables or as
+mounted files.
+
+Let's use the example of an NGINX web server to explain ConfigMaps:
+
+Creating a ConfigMap: You can create a ConfigMap by providing a set of key-value pairs or by directly referencing
+configuration files. In this case, let's create a ConfigMap named "nginx-config" with two files: nginx.conf and
+index.html
+
+```shell
+oc create configmap nginx-config --from-file=nginx.conf --from-file=index.html
+```
+
+This command creates a ConfigMap named "nginx-config" and populates it with the contents of nginx.conf and index.html
+files.
+
+Using ConfigMaps in Pod: To use the ConfigMap in a pod, you can reference it in the pod's configuration file (e.g., a
+YAML file). Here's an example of a pod configuration file that mounts the ConfigMap files as volumes:
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx-pod
+spec:
+  containers:
+    - name: nginx
+      image: nginx
+      volumeMounts:
+        - name: config-volume
+          mountPath: /etc/nginx
+  volumes:
+    - name: config-volume
+      configMap:
+        name: nginx-config
+```
+
+In this example, the pod specification includes a volumeMount that mounts the ConfigMap files under the /etc/nginx
+directory inside the container. The volumes section specifies the config-volume that references the ConfigMap named "
+nginx-config".
+
+Accessing ConfigMap Files: Once the pod is created, the ConfigMap files (nginx.conf and index.html) will be available
+within the pod at the specified mount path (/etc/nginx). The NGINX container can then read the configuration files from
+that path.
+For example, within the NGINX container, you can reference the nginx.conf file in the configuration:
+
+```text
+...
+http {
+  include /etc/nginx/nginx.conf;
+  ...
+}
+...
+```
+
+## ConfigMap
+
+ConfigMaps in OpenShift are a resource type that holds configuration data for pods to consume. They are separate
+entities from running pods and serve the purpose of centralizing and managing configuration information.
+
+One common use case for ConfigMaps is when deploying applications to different environments. For example, during local
+development, you may have non-application dependencies such as a local REST service or database running on your machine.
+To simplify the development environment and connect your application to these local dependencies, you can use values
+that point to the local versions. However, in a full OpenShift deployment, you would want to use different values that
+point to the actual REST service and database. ConfigMaps provide the flexibility to define and manage these values,
+allowing you to easily switch between different environments.
+
+When working with ConfigMaps, it's important to understand the concept of consuming. Consuming a ConfigMap means using
+the data inside it from a pod. Once a ConfigMap exists in OpenShift, you can refer to it in the pod definition to
+consume its data. Multiple pods can consume the same ConfigMap, allowing for centralized configuration management. For
+example, a common scenario is sharing a database name between an application and the associated database pod. By using a
+ConfigMap, you can store the database name in one place and update it centrally. All pods that consume the ConfigMap
+will automatically use the updated configuration.
+
+OpenShift provides various tools to create ConfigMaps. You can create them using command line arguments, files, or
+entire directories. It's important to note that ConfigMaps are not meant for storing sensitive data. OpenShift has a
+dedicated resource type called Secrets for handling sensitive information securely.
+
+ConfigMaps have a storage size limit of one megabyte. If your configuration data exceeds this limit, alternative
+approaches should be considered.
+
+In YAML ConfigMap definitions, the important part is the key-value pairs stored in the data field. Each key represents a
+configuration property, and its corresponding value holds the configuration data.
+
+In this section, you will learn different methods to create and use ConfigMaps in OpenShift, gaining a deeper
+understanding of their benefits and practical applications.
+
+Note: OpenShift ConfigMaps are based on the Kubernetes concept of ConfigMaps. You can find extensive documentation and
+resources on ConfigMaps from both Kubernetes and OpenShift.
+
+
+### Creating ConfigMaps
+
+
 ## Registry
 
 oc adm policy add-cluster-role-to-user cluster-admin developer

@@ -434,15 +434,19 @@ If you have any more questions or need further assistance, please let me know!
 To establish an OpenShift service that allows requests from another pod within our cluster, follow these steps:
 
 Start by ensuring that you have a running OpenShift pod. Execute the following command to create the pod:
+
 ```shell
 oc create -f labs/pod.yaml
 ```
+
 Upon completion of the command, your first pod will be created successfully.
 
 Now, let's proceed with creating a service for the pod. Utilize the following command:
+
 ```shell
 oc expose --port (port_number) pod/pod_name
 ```
+
 You will receive a concise status message, indicating successful exposure instead of the usual "created" message
 obtained from other commands.
 
@@ -457,14 +461,18 @@ explained in the previous lesson.
 
 To validate the service fully, let's create another pod and make a network request from the second pod to the first one.
 Use the following command to set up the second pod:
+
 ```shell
 oc create -f pods/pod2.yaml
 ```
+
 After the command completes, your second pod will be created.
 To open a shell in the second pod, use the following command:
+
 ```shell
-oc exec -it pod/pod2 -- /bin/sh
+oc rsh pod-name 
 ```
+
 Upon execution, you should see a simple prompt displaying the current directory and a dollar sign as the prompt.
 
 Now, we will make a request to the newly created service. The question that arises is: which IP does OpenShift use for
@@ -476,22 +484,43 @@ pods.
 In previous lessons, we primarily used the curl command, but the Hello World pods do not have curl installed. Instead,
 we will use the wget command. Use the following command to make the request:
 
-less
-Copy code
+```shell
 wget -qO- (service_IP:port)
-Replace (service_IP:port) with the appropriate values obtained from oc status.
+```
 
+Using variables:
+
+```shell
+curl $HELLO_WORLD_POD_SERVICE_HOST:$HELLO_WORLD_POD_SERVICE_PORT
+```
+
+Replace (service_IP:port) with the appropriate values obtained from oc status.
 After running the command, you should receive the "Hello World" output:
-css
-Copy code
+
+```shell
 Hi! I'm an environment variable.
+```
+
 This message corresponds to the one specified in the pod YAML definition.
 
-In this lesson, you learned how to access the application over the internal OpenShift network using a service. However,
-relying solely on oc status to find your pods within the cluster is not recommended. In the next lesson, we will explore
-a more robust method of accessing the same pod over the network using environment variables. See you there!
-
-#### Open a local port that forwards traffic to a pod
+Let's expose our service for external access:
+If you do not have an application up and running, you can use the command `oc new-app app-name --as deployment-config`
+```shell
+oc expose svc/hello-world
+```
+After executing the command, you'll receive a confirmation message stating that OpenShift has successfully exposed the
+Route for the "hello-world" Service.
+To check the status and obtain the URL of the newly created Route, we can use the oc status command. The first line of
+the output will display the Route URL.
+Copy the Route URL provided by the oc status command. Now, you can use tools like curl to send HTTP requests to that
+address and verify that the Route is working as expected. For example, you can run: curl <Route_URL> to check if the
+Route is accessible.
+By following these steps, you have successfully created a Route in OpenShift, allowing external access to your
+application.
+Checking the new created route
+```shell
+oc get -o yaml route/hello-world
+```
 
 ```text
 oc port-forward <pod name> <local port>:<pod port>
