@@ -222,6 +222,30 @@ To simplify the development environment and connect your application to these lo
 that point to the local versions. However, in a full OpenShift deployment, you would want to use different values that
 point to the actual REST service and database. ConfigMaps provide the flexibility to define and manage these values,
 allowing you to easily switch between different environments.
+Ex Local Env:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-local
+data:
+  REST_SERVICE_URL: http://localhost:8000
+  DATABASE_URL: jdbc:mysql://localhost:3306/mydb
+
+```
+
+Ex production Env:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config-production
+data:
+  REST_SERVICE_URL: http://production-service:8000
+  DATABASE_URL: jdbc:mysql://production-database:3306/mydb
+```
 
 When working with ConfigMaps, it's important to understand the concept of consuming. Consuming a ConfigMap means using
 the data inside it from a pod. Once a ConfigMap exists in OpenShift, you can refer to it in the pod definition to
@@ -234,7 +258,7 @@ OpenShift provides various tools to create ConfigMaps. You can create them using
 entire directories. It's important to note that ConfigMaps are not meant for storing sensitive data. OpenShift has a
 dedicated resource type called Secrets for handling sensitive information securely.
 
-ConfigMaps have a storage size limit of one megabyte. If your configuration data exceeds this limit, alternative
+ConfigMaps have a storage size limit of `one megabyte`. If your configuration data exceeds this limit, alternative
 approaches should be considered.
 
 In YAML ConfigMap definitions, the important part is the key-value pairs stored in the data field. Each key represents a
@@ -246,10 +270,66 @@ understanding of their benefits and practical applications.
 Note: OpenShift ConfigMaps are based on the Kubernetes concept of ConfigMaps. You can find extensive documentation and
 resources on ConfigMaps from both Kubernetes and OpenShift.
 
+## ImageStream and ImageStreamTag
 
-### Creating ConfigMaps
+In OpenShift, an ImageStream and ImageStreamTag are specific resources used for managing container images within the
+cluster. Let's delve into each concept:
 
+ImageStream:
+
+An ImageStream is an OpenShift-specific resource that acts as a named stream of container images. It provides a
+higher-level abstraction for managing images and their versions.
+ImageStreams track the complete history of a container image, including different versions, tags, and related metadata.
+By using an ImageStream, you can decouple your application deployments from specific image versions and refer to them by
+a consistent name.
+ImageStreams facilitate easy updates to the latest version of an image, making it simpler to manage and deploy
+applications in a dynamic environment.
+ImageStreamTag:
+
+An ImageStreamTag is a specific version or tag of a container image within an ImageStream.
+It represents a unique identifier for a particular version of an image, allowing you to track and reference it easily.
+ImageStreamTags provide stability for referencing a specific image version, even if newer versions of the image are
+added to the ImageStream.
+By associating an ImageStreamTag with a deployment or build configuration, you can ensure that the desired image version
+is consistently used.
+Together, ImageStreams and ImageStreamTags enable efficient management and versioning of container images in OpenShift.
+With ImageStreams, you can abstract away the underlying image details and focus on deploying and maintaining
+applications based on specific versions or tags.
+
+By leveraging ImageStreamTags, you ensure that your deployments and builds consistently use a specific version of an
+image, even as new versions are added to the ImageStream.
+
+These OpenShift-specific resources help streamline image management, simplify application updates, and enhance
+reproducibility within your OpenShift projects.
+
+`oc imagestream`:
+
+An ImageStream is an OpenShift-specific resource that represents a named stream of container images. It acts as a
+higher-level abstraction over container images and provides various capabilities for image management.
+The oc imagestream command is used to create, view, modify, and delete ImageStreams in OpenShift.
+You can create an ImageStream using a YAML definition or by running the oc create imagestream command.
+An ImageStream can have multiple tags associated with it, each representing a specific version or variant of the
+container image.
+`oc imagestreamtag`:
+
+An ImageStreamTag is a specific version or tag of a container image within an ImageStream.
+The oc imagestreamtag command allows you to interact with the tags of an ImageStream.
+You can use this command to create, view, modify, and delete tags within an ImageStream.
+Tags can be associated with specific container images, and they provide a way to refer to and track different versions
+or variants of the image.
+ImageStreamTags can be used in deployments, builds, and other resources to ensure consistency and reproducibility when
+referring to container images.
 
 ## Registry
 
 oc adm policy add-cluster-role-to-user cluster-admin developer
+
+## Commands
+
+```shell
+oc delete pods --all
+oc delete dc --all
+oc delete configmap --all
+oc delete route --all
+oc delete service --all
+```
