@@ -1,9 +1,20 @@
-FROM ubuntu:20.04
+import os
+from flask import Flask
 
-RUN apt-get update && apt-get install -y python3 python3-pip
+app = Flask(__name__)
 
-RUN pip install flask
 
-COPY app.py /opt/
+@app.route("/")
+def main():
+    color = os.environ.get('COLOR', "green")
+    message = "Welcome !!! This is " + color + " environment"
+    return message
 
-ENTRYPOINT FLASK_APP=/opt/app.py flask run --host=0.0.0.0 --port=8080
+
+@app.route('/how are you')
+def hello():
+    return 'I am good, how about you?'
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=8080)
