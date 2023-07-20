@@ -333,3 +333,199 @@ oc delete configmap --all
 oc delete route --all
 oc delete service --all
 ```
+
+# Deployment
+
+**Understanding Deployments**
+
+Deployments in Openshift share similarities with Kubernetes. Before delving into Openshift's specific features, let's
+recap what Deployments are in general.
+
+In Kubernetes, the smallest deployable unit is a **POD**, which consists of one or more Docker containers interdependent
+on each other. Typically, a POD contains a single Docker container, and it serves as an instance of the application,
+enabling scaling and high availability.
+
+To achieve multiple instances of the application running, Replication Controllers come into play. These controllers
+create replicas of pods, ensuring the desired number of application replicas run continuously. In the hierarchy,
+Deployments come next.
+
+**Enhancing Application Lifecycle Management**
+
+Deployments in Openshift build upon Replication Controllers by introducing additional support for Application Lifecycle
+Management. This includes features like seamless upgrades, rollbacks, and application revisioning, making it easier to
+manage the application's lifecycle.
+
+When you add an application to your project in Openshift, a Build configuration and a Deployment are automatically
+created. The Deployment, visible in the applications deployments section, is configured to use the image built by the
+Build configuration, which is pointed by the image stream.
+
+Currently, the Deployment is set to deploy only one replica of the application, and the deployment strategy is set to
+rolling. With a rolling deployment strategy, when you update the application, the replicas are updated one at a time,
+ensuring a smooth transition.
+
+**Triggers for Deployment Updates**
+
+The triggers section answers questions about how often a Deployment gets updated and whether it's manual or automatic.
+Openshift offers both manual and automatic ways to trigger a Deployment.
+
+You can manually trigger a Deployment from the user interface (UI) by clicking on the deploy button or via the Command
+Line Interface (CLI) using the provided command.
+
+Additionally, the deployment configuration is set to automatically trigger a deployment whenever the dependent
+application image is updated. This automatic update occurs whenever a build job runs, streamlining the deployment
+process.
+
+**YAML Configuration and User Interface**
+
+The deployment configuration can be viewed in YAML format by selecting the edit YAML option in the actions dropdown.
+Although the YAML file looks similar to a deployment configuration in Kubernetes, note that there are some differences.
+
+The kind specified in Openshift is "deployment config," unlike Kubernetes where it is "deployment." Similarly, the app
+version in Openshift is specific to the platform. However, other sections such as specification, replicas, strategy, and
+template remain similar.
+
+Thankfully, in Openshift, you won't need to work with the YAML file frequently, as a user interface is provided to
+configure these values more conveniently.
+
+**Deployment Strategies in Openshift**
+
+In this chapter, we will delve into the various deployment strategies available in Openshift, along with some advanced
+deployment techniques.
+
+**Basic Deployment Strategies**
+
+Openshift offers two basic deployment strategies: "recreate" and "rolling update."
+
+The "recreate" strategy involves destroying all instances of the older version of the application and then deploying
+newer instances. This means the application will be inaccessible to users during the update process.
+
+The "rolling update" strategy, which is the default in Openshift, updates replicas one at a time. This ensures the
+application remains accessible to users throughout the update process, providing a seamless upgrade experience.
+
+**Advanced Deployment Strategies**
+
+Two advanced deployment strategies in Openshift are "Blue/Green" and "A/B deployment."
+
+The "Blue/Green" strategy involves deploying a newer version of the application alongside the current version. After
+testing the new version successfully, user access is switched from the old (blue) version to the new (green) version by
+modifying the load balancer or routing configuration.
+
+"A/B deployment" allows testing new versions of the application in the production environment, but with limited user
+traffic redirected to the new instances. Gradually, based on the A/B test results, traffic distribution to the new
+version is increased until a full upgrade is achieved.
+
+- `oc rollout latest <deployment_name>`: Triggers a build to deploy the latest version of the application.
+- `oc rollout history`: Provides a history of previous builds.
+- `oc rollout describe`: Gives detailed information about a deployment.
+- `oc rollout undo`: Rolls back a deployment to a previous version.
+
+## Resuming DeploymentConfig concept
+
+In Openshift, a `DeploymentConfig` is a resource that manages the deployment and scaling of applications. It is an
+extension of the Kubernetes `Deployment` resource and provides additional features specific to Openshift, such as
+support for lifecycle hooks and automatic triggers for application deployments.
+
+You should create a `DeploymentConfig` when you want to deploy and manage your application in Openshift, especially if
+you want to take advantage of the extra features it offers. A `DeploymentConfig` is beneficial in scenarios where you
+need to ensure high availability, have seamless upgrades and rollbacks, and want to automate the deployment process
+based on certain triggers.
+
+Here's an example of what a basic `DeploymentConfig` YAML file might look like:
+
+**deployment-config.yaml:**
+
+```yaml
+apiVersion: apps.openshift.io/v1
+kind: DeploymentConfig
+metadata:
+  name: my-app-deployment
+spec:
+  replicas: 3
+  selector:
+    app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+        - name: my-app-container
+          image: your-docker-image:latest
+          ports:
+            - containerPort: 8080
+```
+
+Explanation of the YAML content:
+
+- `apiVersion`: Specifies the API version for the `DeploymentConfig`.
+- `kind`: Indicates the type of resource, in this case, a `DeploymentConfig`.
+- `metadata`: Includes metadata for the resource, such as the name of the deployment.
+- `spec`: Contains the specification for the `DeploymentConfig`.
+    - `replicas`: Specifies the number of replicas you want to run for your application. In this example, we have set it
+      to 3.
+    - `selector`: Defines the label selector that matches the pods controlled by this deployment.
+    - `template`: Contains the pod template specification for the deployment.
+        - `metadata`: Includes labels for the pod template.
+        - `spec`: Specifies the actual configuration for the pod.
+            - `containers`: Describes the containers running in the pod.
+                - `name`: Name of the container.
+                - `image`: Specifies the Docker image to use for the container. Replace `your-docker-image` with the
+                  actual image name and version you want to deploy.
+                - `ports`: Exposes ports for the container. In this example, we have exposed port 8080.
+
+Note that this is a basic example, and you can customize the `DeploymentConfig` according to your specific application
+requirements. For instance, you can add environment variables, resource limits, readiness and liveness probes, and other
+advanced features to optimize the application deployment in Openshift.
+
+Once you have created the `deployment-config.yaml` file, you can apply it to your Openshift cluster using the `oc apply`
+command:
+
+```bash
+oc apply -f deployment-config.yaml
+```
+
+This will create the `DeploymentConfig` resource and start the deployment of your application based on the specified
+configuration.
+
+## Services and Routes
+
+In Openshift, external connectivity for applications deployed in the cluster is provided through the concept of "
+Services" and "Routes."
+
+**1. Services:**
+A Service is an abstract way to expose an application running in a Pod to other Pods within the cluster or external
+clients. It acts as a stable endpoint, allowing external clients to access the application without worrying about the
+specific IP addresses of individual Pods. Services provide load balancing and service discovery for the Pods behind
+them.
+
+When a Service is created, it is assigned a virtual IP address (ClusterIP), which serves as the entry point to access
+the Pods associated with the Service. Services use selectors to determine which Pods to forward traffic to based on
+labels. External clients can access the Service using its ClusterIP and the specified port.
+
+**2. Routes:**
+Routes are used to expose applications running in the cluster to external clients outside the cluster. Unlike Services,
+which provide access only within the cluster, Routes allow external traffic to reach the Pods running the application.
+
+Routes use the concept of Hostnames to define the external access point. When you create a Route, you specify a hostname
+and an optional path that will be mapped to the Service serving the application. For example, a Route with the
+hostname "example.com" could be mapped to a Service that serves the web application, allowing external clients to access
+the application using "example.com" as the URL.
+
+Routes are implemented through the Openshift router, which is responsible for managing incoming external traffic and
+forwarding it to the appropriate Service and Pod inside the cluster.
+
+**External Connectivity Example:**
+Let's say you have a web application deployed in your Openshift cluster, and you want to make it accessible externally
+through a custom domain name (example.com).
+
+1. First, you create a Service to expose your web application internally within the cluster. This Service has a
+   ClusterIP and selects the Pods running the web application based on their labels.
+
+2. Next, you create a Route and map it to the Service associated with the web application. You set the hostname of the
+   Route to "example.com."
+
+3. When external clients access "example.com" in their browsers, the Openshift router intercepts the request and
+   forwards it to the Service, which in turn load-balances the traffic to the Pods running the web application.
+
+By using Services and Routes, you can effectively manage both internal communication between Pods and external access to
+your applications in Openshift, providing a seamless experience for your users.

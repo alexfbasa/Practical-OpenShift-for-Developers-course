@@ -1,0 +1,38 @@
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  # New app name
+  name: simple-webapp-docker
+  namespace: cp-0001
+spec:
+  output:
+    to:
+      kind: ImageStreamTag
+      # New build to new image
+      name: 'simple-webapp-docker:latest'
+  runPolicy: Serial
+  source:
+    git:
+      ref: master
+      uri: 'https://github.com/alexfbasa/simple-webapp-flask.git'
+    type: Git
+  strategy:
+    # Change the Strategy to Docker
+    dockerStrategy:
+      from:
+    # Change the type to Docker
+    type: Docker
+  triggers:
+    - imageChange:
+        lastTriggeredImageID: >-
+          172.30.1.1:5000/openshift/python@sha256:ac50754646f0d37616515fb30467d8743fb12954260ec36c9ecb5a94499447e0
+      type: ImageChange
+    - type: ConfigChange
+    - generic:
+        secret: 0437535021b87142
+      type: Generic
+    - github:
+        secret: 8f4c90fadbc2b373
+      type: GitHub
+status:
+  lastVersion: 2
