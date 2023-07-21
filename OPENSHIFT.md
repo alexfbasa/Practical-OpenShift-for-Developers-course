@@ -487,6 +487,46 @@ oc apply -f deployment-config.yaml
 This will create the `DeploymentConfig` resource and start the deployment of your application based on the specified
 configuration.
 
+## Openshift SDN
+
+In Openshift, networking plays a crucial role in ensuring that Pods and services can communicate with each other
+effectively within the cluster. Here's a summary of the key points discussed in the lecture:
+
+1. **Kubernetes Networking Basics:**
+   In a Kubernetes cluster, each node (master and worker nodes) has its own IP address. When applications are deployed
+   as Docker containers in Pods, each Pod is assigned a unique IP address. For pods to communicate with each other, they
+   must be on a network that enables communication and provides unique IP addresses.
+
+2. **Openshift Software Defined Networking (SDN):**
+   Openshift addresses the networking challenge by using the Openshift Software Defined Networking. It creates an
+   Overlay Network, based on the Open vSwitch standard, that spans across multiple nodes in the cluster. This virtual
+   network facilitates communication between Pods on different nodes.
+
+3. **Overlay Network:**
+   The default network ID for the Overlay Network is 10.128.0.0/14. Each node is assigned a unique subnet within this
+   range. For example, node 1 might have 10.128.2.0, node 2 with 10.128.4.0, and so on. All Pods on these nodes get
+   unique IP addresses within their respective subnets.
+
+4. **DNS in Openshift:**
+   To address the issue of dynamic IP addresses for Pods, Openshift has a built-in DNS server. This DNS server helps map
+   IP addresses to Pods and services, allowing you to use pod or service names to connect to other components instead of
+   relying on static IP addresses.
+
+5. **Using Services:**
+   While direct connectivity between Pods using IP addresses is possible, it is not recommended as IP addresses might
+   change. The preferred method for communication between Pods is to use Services. Services act as stable endpoints and
+   provide load balancing and service discovery. They allow you to access Pods using the Service's ClusterIP.
+
+6. **Plugins for Software Defined Networking:**
+   Openshift provides different plugins for Software Defined Networking, with the default plugin being `ovs-subnet`.
+   This plugin offers network connectivity between all Pods across the cluster. Additionally, Openshift supports other
+   plugins such as `ovs-multitenant`, `Nuage`, `Contiv`, and `Flannel`, each offering different networking capabilities
+   and catering to specific requirements.
+
+The combination of Overlay Networks, Services, DNS, and networking plugins in Openshift ensures seamless communication
+and efficient networking within the cluster, enabling your applications to run smoothly and interact with each other
+effectively.
+
 ## Services and Routes
 
 In Openshift, external connectivity for applications deployed in the cluster is provided through the concept of "
