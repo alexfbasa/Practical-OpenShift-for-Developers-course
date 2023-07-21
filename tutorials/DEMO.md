@@ -26,7 +26,7 @@ To build a Docker image for this application, we would create a Dockerfile with 
 case, we start with an Ubuntu OS, install Python and Pip packages, install Flask, copy the application code into the
 image, and specify the entry point to run the application. Running the Docker build command using this Dockerfile
 creates the Docker image.
-[Dockerfile](simple-webapp-docker/Dockerfile)
+[Dockerfile](../simple-webapp-docker/Dockerfile)
 
 This build strategy is supported by OpenShift and is known as the Docker build strategy. It requires providing the list
 of instructions in a Dockerfile alongside the application code in the source code repository. When the build job runs,
@@ -37,7 +37,7 @@ registry.
 
 OpenShift also supports the Source-to-Image (S2I) build strategy, which is a framework that converts application code
 into a reusable Docker image without the need for a Dockerfile.
-[Application Code](labs/demos/simple-webapp/app.py)
+[Application Code](../labs/demos/simple-webapp/app.py)
 The S2I tool creates the image by using a pre-built
 Python builder image and injecting the application code into it. In a previous exercise, when we deployed the
 application using the Python catalog item, OpenShift automatically created a build configuration of type Source-to-Image
@@ -81,15 +81,15 @@ To create a new build configuration, you can follow these steps:
 1. Select the build in the OpenShift web console and go to the configuration tab.
 2. In the configuration details, you can see the build strategy, the URL of the GitHub repository, and the Python image
    used by the S2I tool.
-   [View Build Config](simple-webapp-docker/images/img_3.png)
+   [View Build Config](../simple-webapp-docker/images/img_3.png)
 3. Once the build is successful, the final Docker image is pushed to the internal Docker registry at the
    address `cp-0001/simple-webapp:latest`.
 4. In the top right corner of the user interface, there is an action button with options like edit and edit YAML.
    Clicking on edit YAML provides the build configuration in YAML format.
 5. To create a new build configuration using the Docker build strategy, reuse the S2I YAML file and modify it
    accordingly. Check files:
-   [S2I app file](labs/demos/S2i-build-config.yaml)
-   [Docker app file](labs/demos/Docker-build-config.yaml)
+   [S2I app file](../labs/demos/S2i-build-config.yaml)
+   [Docker app file](../labs/demos/Docker-build-config.yaml)
 6. Give the build configuration a new name, such as `simple-webapp-docker`, to differentiate it from the existing one
    in the UI.
 7. Modify the source to use a new repository containing the Dockerfile.
@@ -179,3 +179,13 @@ needs.
    happening, and I now see that the build configuration is complete and pushed to the new image stream.
    Well, that's it for this demo.
 
+## Service and Routes
+
+Create a new service-config.yaml file:
+[Service-config.yaml](../labs/demos/simple-webapp-docker/services-config.yaml)
+Now you can create a new service just importing the yaml into the Openshift - import YAML/JSON menu.
+
+Go inside the Minishift Virtual-Box - login root and password centos.
+```commandline
+curl http://IP:PORT
+```

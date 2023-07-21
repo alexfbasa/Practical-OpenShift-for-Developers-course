@@ -499,17 +499,22 @@ effectively within the cluster. Here's a summary of the key points discussed in 
 
 2. **Openshift Software Defined Networking (SDN):**
    Openshift addresses the networking challenge by using the Openshift Software Defined Networking. It creates an
-   Overlay Network, based on the Open vSwitch standard, that spans across multiple nodes in the cluster. This virtual
+   Overlay Network, based on the **Open vSwitch standard**, that spans across multiple nodes in the cluster. This
+   virtual
    network facilitates communication between Pods on different nodes.
 
 3. **Overlay Network:**
    The default network ID for the Overlay Network is 10.128.0.0/14. Each node is assigned a unique subnet within this
    range. For example, node 1 might have 10.128.2.0, node 2 with 10.128.4.0, and so on. All Pods on these nodes get
    unique IP addresses within their respective subnets.
+    ```commandline
+    oc get pods -o wide
+    ```
 
 4. **DNS in Openshift:**
    To address the issue of dynamic IP addresses for Pods, Openshift has a built-in DNS server. This DNS server helps map
-   IP addresses to Pods and services, allowing you to use pod or service names to connect to other components instead of
+   IP addresses to Pods and services, allowing you to use `pod` or `service names` to connect to other components
+   instead of
    relying on static IP addresses.
 
 5. **Using Services:**
@@ -525,7 +530,7 @@ effectively within the cluster. Here's a summary of the key points discussed in 
 
 The combination of Overlay Networks, Services, DNS, and networking plugins in Openshift ensures seamless communication
 and efficient networking within the cluster, enabling your applications to run smoothly and interact with each other
-effectively.
+effectively. What about external access. Let's talk about Services and Routes.
 
 ## Services and Routes
 
@@ -569,3 +574,75 @@ through a custom domain name (example.com).
 
 By using Services and Routes, you can effectively manage both internal communication between Pods and external access to
 your applications in Openshift, providing a seamless experience for your users.
+
+## Template 
+
+In this lecture, we learned about Templates and Catalogues in Openshift and how they can simplify the deployment process
+of complex applications by packaging various components into a single template. Let's recap the key points:
+
+1. **Catalogue in Openshift:**
+   When you log in to the Openshift web console, the interface you see with various deployment options is the Catalogue.
+   The Catalogue provides pre-configured templates for deploying applications and services. It offers a user-friendly
+   way to deploy applications and stacks without having to manually configure each component.
+
+2. **Catalogue Items:**
+   Catalogue items are pre-built templates that combine different objects like Build configurations, Deployment
+   configurations, Services, Image Streams, Secrets, and Routes into a fully operational application stack. For example,
+   the Django and PostgreSQL catalog item is a combination of various components required for a Django application with
+   a PostgreSQL database.
+
+3. **Creating a Template:**
+   You can create your own templates by packaging various components required for your application. To create a
+   template, you need to create a YAML or JSON file and define the objects and their configurations. These objects can
+   include Secrets, Services, Routes, Build configurations, Deployment configurations, Image Streams, and user
+   parameters.
+
+4. **YAML Structure for a Template:**
+   In the YAML file, define the `apiVersion` as `v1` and `kind` as `template` under `Metadata`. Create an array of
+   objects in the `object` section, specifying each component required for your application stack. Include sections for:
+   * Secrets;
+   * Services;
+   * Routes;
+   * Build configurations;
+   * Deployment configurations;
+   * Image Streams;
+   * Parameters for user input.
+
+    template-config.yaml
+    ```yaml
+    apiVersion: 1
+    kind: Template
+    metadata:
+      name: custom-app
+   objects:
+   - apiVersion: v1
+     kind: Secret
+   - apiVersion: v1
+     kind: Service
+   - apiVersion: v1
+     kind: BuildConfig
+   - apiVersion: v1
+     kind: DeploymentConfig
+   - apiVersion: v1
+     kind: ImageStream
+   parameters:
+   - displayName: "Namespace"
+     name: "NAMESPACE"
+    ```
+5. **Parameterizing Templates:**
+   Templates can be parameterized to allow users to input specific values during deployment. For example, users can
+   input the application name, namespace, Git repository, etc. These parameters can be defined in the template's YAML
+   file and appear in the input wizard when deploying the template.
+
+6. **Creating a Template:**
+   After creating the YAML file, you can create the template using the `oc create -f template-config.yaml` command. This
+   will make the template available in the Catalogue for easy deployment.
+
+7. **Using `oc export`:**
+   If you are not sure how to develop the YAML contents for a particular service or component, you can use
+   the `oc export` command to output the YAML configuration. You can then modify and parameterize the YAML as needed to
+   create your template.
+
+Templates and Catalogues in Openshift provide a powerful way to simplify and standardize the deployment process for
+complex applications, making it easier for developers to deploy fully operational application stacks with just a few
+clicks in the web console.
